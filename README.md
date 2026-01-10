@@ -5,13 +5,13 @@ A beautiful CLI to download files, folders, or entire repositories from GitHub U
 ## Installation
 
 ```bash
-npm install -g gitload
+npm install -g gitload-cli
 ```
 
 Or run directly with npx:
 
 ```bash
-npx gitload <github-url>
+npx gitload-cli <github-url>
 ```
 
 ## Usage
