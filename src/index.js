@@ -20,7 +20,7 @@ program
   .version(pkg.version)
   .argument('<url>', 'GitHub URL (repo root, folder, or file)')
   .option('-z, --zip <path>', 'Save as ZIP file at the specified path')
-  .option('-o, --output <dir>', 'Output directory (default: current directory)', '.')
+  .option('-o, --output <dir>', 'Output directory (default: folder named after URL path)')
   .option('-t, --token <token>', 'GitHub personal access token (for private repos or higher rate limits)')
   .option('--gh', 'Use token from gh CLI (requires gh auth login)')
   .option('--no-color', 'Disable colored output')
@@ -38,8 +38,11 @@ ${chalk.bold('Examples:')}
   ${chalk.dim('# Download as ZIP')}
   $ gitload https://github.com/user/repo -z ./repo.zip
 
-  ${chalk.dim('# Download to specific directory')}
-  $ gitload https://github.com/user/repo -o ./my-folder
+  ${chalk.dim('# Download to custom directory')}
+  $ gitload https://github.com/user/repo/tree/main/src -o ./my-src
+
+  ${chalk.dim('# Download contents flat to current directory')}
+  $ gitload https://github.com/user/repo/tree/main/src -o .
 
 ${chalk.bold('Authentication:')}
   ${chalk.dim('# Use token from gh CLI')}
@@ -158,11 +161,26 @@ async function main() {
   // Download files
   console.log();
   
+  // Determine output directory
+  // Default: folder named after the URL path (last segment) or repo name
+  let outputDir = options.output;
+  if (!outputDir && !options.zip) {
+    if (parsed.path) {
+      // Use the last segment of the path
+      outputDir = parsed.path.split('/').pop();
+    } else {
+      // Use the repo name for root
+      outputDir = parsed.repo;
+    }
+  } else if (!outputDir) {
+    outputDir = '.';
+  }
+
   try {
     if (options.zip) {
       await downloadToZip(files, options.zip, parsed);
     } else {
-      await downloadFiles(files, options.output, parsed);
+      await downloadFiles(files, outputDir, parsed);
     }
   } catch (error) {
     console.error(chalk.red(`\nDownload failed: ${error.message}`));

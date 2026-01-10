@@ -24,7 +24,7 @@ Arguments:
 
 Options:
   -z, --zip <path>       Save as ZIP file at the specified path
-  -o, --output <dir>     Output directory (default: current directory)
+  -o, --output <dir>     Output directory (default: folder named after URL path)
   -t, --token <token>    GitHub personal access token (for private repos)
   --gh                   Use token from gh CLI (requires gh auth login)
   --no-color             Disable colored output
@@ -38,18 +38,21 @@ Options:
 
 ```bash
 gitload https://github.com/user/repo
+# Creates ./repo/ folder
 ```
 
 ### Download a specific folder
 
 ```bash
 gitload https://github.com/user/repo/tree/main/src
+# Creates ./src/ folder
 ```
 
 ### Download a single file
 
 ```bash
 gitload https://github.com/user/repo/blob/main/README.md
+# Creates ./README.md
 ```
 
 ### Download as a ZIP file
@@ -58,10 +61,18 @@ gitload https://github.com/user/repo/blob/main/README.md
 gitload https://github.com/user/repo -z ./repo.zip
 ```
 
-### Download to a specific directory
+### Download to a custom directory
 
 ```bash
-gitload https://github.com/user/repo -o ./my-project
+gitload https://github.com/user/repo/tree/main/src -o ./my-source
+# Creates ./my-source/ folder
+```
+
+### Download contents flat to current directory
+
+```bash
+gitload https://github.com/user/repo/tree/main/src -o .
+# Downloads directly to current folder
 ```
 
 ### Download a private repository
