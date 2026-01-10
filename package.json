@@ -1,6 +1,6 @@
 {
   "name": "gitload-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Download files, folders, or entire repos from GitHub URLs",
   "type": "module",
   "main": "src/index.js",
