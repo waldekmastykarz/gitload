@@ -163,13 +163,17 @@ async function main() {
   
   // Determine output directory
   // Default: folder named after the URL path (last segment) or repo name
+  // For single files (blob), save to current directory
   let outputDir = options.output;
   if (!outputDir && !options.zip) {
-    if (parsed.path) {
-      // Use the last segment of the path
+    if (parsed.type === 'blob') {
+      // Single file: save to current directory
+      outputDir = '.';
+    } else if (parsed.path) {
+      // Folder: use the last segment of the path
       outputDir = parsed.path.split('/').pop();
     } else {
-      // Use the repo name for root
+      // Root: use the repo name
       outputDir = parsed.repo;
     }
   } else if (!outputDir) {
