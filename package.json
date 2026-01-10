@@ -16,6 +16,13 @@
     "cli",
     "git"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waldekmastykarz/gitload.git"
+  },
+  "files": [
+    "src"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
