@@ -1,0 +1,30 @@
+{
+  "name": "gitload",
+  "version": "1.0.0",
+  "description": "Download files, folders, or entire repos from GitHub URLs",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "gitload": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "github",
+    "download",
+    "cli",
+    "git"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "ora": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
