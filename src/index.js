@@ -161,10 +161,15 @@ async function main() {
   // Download files
   console.log();
   
-  // Determine output directory
+  // Determine output directory/path
   // Default: folder named after the URL path (last segment) or repo name
-  // For single files (blob), save to current directory
+  // For single files (blob):
+  //   - No -o: save to current directory with original name
+  //   - -o ends with /: save to that directory with original name
+  //   - -o without trailing /: use as exact file path (rename)
   let outputDir = options.output;
+  let outputIsFilePath = false;
+  
   if (!outputDir && !options.zip) {
     if (parsed.type === 'blob') {
       // Single file: save to current directory
@@ -178,13 +183,23 @@ async function main() {
     }
   } else if (!outputDir) {
     outputDir = '.';
+  } else if (parsed.type === 'blob' && outputDir) {
+    // For single file downloads:
+    // - Trailing slash means directory (keep original filename)
+    // - No trailing slash means exact file path (rename)
+    if (outputDir.endsWith('/')) {
+      // Remove trailing slash, treat as directory
+      outputDir = outputDir.slice(0, -1) || '.';
+    } else {
+      outputIsFilePath = true;
+    }
   }
 
   try {
     if (options.zip) {
       await downloadToZip(files, options.zip, parsed);
     } else {
-      await downloadFiles(files, outputDir, parsed);
+      await downloadFiles(files, outputDir, parsed, { outputIsFilePath });
     }
   } catch (error) {
     console.error(chalk.red(`\nDownload failed: ${error.message}`));

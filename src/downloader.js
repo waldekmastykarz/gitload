@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'fs/promises';
 import { createWriteStream } from 'fs';
-import { dirname, join, basename, relative } from 'path';
+import { dirname, join, basename, relative, extname } from 'path';
 import chalk from 'chalk';
 import archiver from 'archiver';
 import { GitHubClient } from './github-client.js';
@@ -74,15 +74,20 @@ function getRelativePath(filePath, parsed) {
 /**
  * Download files to a directory
  * @param {import('./github-client.js').GitHubFile[]} files - Files to download
- * @param {string} outputDir - Output directory
+ * @param {string} outputDir - Output directory (or file path for single file downloads)
  * @param {import('./github-parser.js').ParsedGitHubUrl} parsed - Parsed URL
+ * @param {Object} options - Download options
+ * @param {boolean} [options.outputIsFilePath] - If true, outputDir is treated as an exact file path for single file downloads
  */
-export async function downloadFiles(files, outputDir, parsed) {
+export async function downloadFiles(files, outputDir, parsed, options = {}) {
   const client = new GitHubClient(process.env.GITHUB_TOKEN);
   const total = files.length;
   let current = 0;
   let downloadedBytes = 0;
   let spinnerIndex = 0;
+
+  // Check if this is a single file download with an explicit file path
+  const isSingleFileWithPath = parsed.type === 'blob' && files.length === 1 && options.outputIsFilePath;
 
   console.log(chalk.bold('Downloading files...'));
   console.log();
@@ -111,7 +116,8 @@ export async function downloadFiles(files, outputDir, parsed) {
 
   for (const file of files) {
     const relativePath = getRelativePath(file.path, parsed);
-    const outputPath = join(outputDir, relativePath);
+    // If single file with explicit path, use outputDir as the file path directly
+    const outputPath = isSingleFileWithPath ? outputDir : join(outputDir, relativePath);
     
     try {
       // Ensure directory exists

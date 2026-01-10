@@ -51,12 +51,35 @@ node src/index.js https://github.com/user/repo/tree/main/src      # Folder
 node src/index.js https://github.com/user/repo/blob/main/file.js  # Single file
 ```
 
+## Testing
+
+```bash
+npm test              # Run tests once
+npm run test:watch    # Run tests in watch mode
+```
+
+Tests are in `src/index.test.js` and cover:
+- Single file downloads (to current dir, to custom dir, with custom filename)
+- Folder downloads (default naming, custom output dir)
+
+Always run tests after making changes to verify nothing broke.
+
+### Bug fix workflow
+
+When a bug is reported:
+1. **First**, write a failing test that reproduces the bug
+2. Run the test to confirm it fails
+3. Fix the bug
+4. Run the test to confirm it passes
+5. Run all tests to ensure no regressions
+
 ## Dependencies
 
 - `commander` - CLI argument parsing
 - `chalk` - Terminal colors (supports `--no-color`)
 - `ora` - Loading spinners
 - `archiver` - ZIP creation
+- `vitest` - Testing (dev dependency)
 
 ## Conventions
 
