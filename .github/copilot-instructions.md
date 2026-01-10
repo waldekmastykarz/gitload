@@ -64,3 +64,21 @@ node src/index.js https://github.com/user/repo/blob/main/file.js  # Single file
 - Functions are small and single-purpose
 - Console output uses the 🦦 otter emoji as the tool mascot
 - Requires Node.js ≥18 (uses native `fetch`)
+
+## Releasing
+
+Use `npm version` to bump version, commit, and create a git tag in one step:
+
+```bash
+npm version patch   # 1.0.0 → 1.0.1 (bug fixes)
+npm version minor   # 1.0.0 → 1.1.0 (new features, backward compatible)
+npm version major   # 1.0.0 → 2.0.0 (breaking changes)
+```
+
+Then push the commit and tag to trigger the publish workflow:
+
+```bash
+git push && git push --tags
+```
+
+The GitHub Actions workflow (`.github/workflows/publish.yml`) automatically publishes to npm when a `v*` tag is pushed.
