@@ -86,7 +86,7 @@ When a bug is reported:
 - JSDoc typedefs for complex objects (see `ParsedGitHubUrl`, `GitHubFile`)
 - Functions are small and single-purpose
 - Console output uses the 🦦 otter emoji as the tool mascot
-- Requires Node.js ≥18 (uses native `fetch`)
+- Requires Node.js ≥20 (uses native `fetch`)
 
 ## Releasing
 
