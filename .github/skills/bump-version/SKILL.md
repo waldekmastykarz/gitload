@@ -60,13 +60,14 @@ Add a new entry at the top of CHANGELOG.md (below the `# Changelog` heading) for
 
 ### Step 6: Apply the Version Bump
 
-After the changelog is staged, run:
+Commit the staged changelog, then run `npm version`:
 
 ```bash
+git commit -m "docs: update changelog for vX.Y.Z"
 npm version <patch|minor|major>
 ```
 
-This command updates `package.json`, creates a git commit (which includes the staged CHANGELOG.md), and creates a git tag in one step.
+The `npm version` command requires a clean working directory. Committing the changelog first ensures it runs without issues. `npm version` then updates `package.json`, creates a second commit, and tags it.
 
 ### Step 7: Remind About Publishing
 
