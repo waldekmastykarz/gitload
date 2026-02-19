@@ -45,17 +45,30 @@ Present the analysis to the user:
 3. Show what the new version number will be (current → new)
 4. Ask the user to confirm or choose a different bump type
 
-### Step 5: Apply the Version Bump
+### Step 5: Update the Changelog
 
-After user confirmation, run:
+**STOP — Read CHANGELOG.md before writing.** Match the existing format and style.
+
+Add a new entry at the top of CHANGELOG.md (below the `# Changelog` heading) for the new version:
+
+1. Use today's date and the new version number
+2. Add a compare link to the previous tag: `[X.Y.Z](https://github.com/waldekmastykarz/gitload/compare/vPREV...vX.Y.Z)`
+3. Group changes into sections: **Features**, **Bug Fixes**, **Maintenance** (only include sections that apply)
+4. Write human-friendly descriptions, not raw commit messages
+5. **Only include user-facing changes** — skip dependency bumps, CI changes, and internal refactors unless they affect users (e.g., minimum Node.js version change is user-facing)
+6. Stage the file: `git add CHANGELOG.md`
+
+### Step 6: Apply the Version Bump
+
+After the changelog is staged, run:
 
 ```bash
 npm version <patch|minor|major>
 ```
 
-This command updates `package.json`, creates a git commit, and creates a git tag in one step.
+This command updates `package.json`, creates a git commit (which includes the staged CHANGELOG.md), and creates a git tag in one step.
 
-### Step 6: Remind About Publishing
+### Step 7: Remind About Publishing
 
 After bumping, remind the user to push the commit and tag to trigger the publish workflow:
 
