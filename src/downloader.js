@@ -78,9 +78,10 @@ function getRelativePath(filePath, parsed) {
  * @param {import('./github-parser.js').ParsedGitHubUrl} parsed - Parsed URL
  * @param {Object} options - Download options
  * @param {boolean} [options.outputIsFilePath] - If true, outputDir is treated as an exact file path for single file downloads
+ * @param {string} [options.token] - GitHub personal access token
  */
 export async function downloadFiles(files, outputDir, parsed, options = {}) {
-  const client = new GitHubClient(process.env.GITHUB_TOKEN);
+  const client = new GitHubClient(options.token);
   const total = files.length;
   let current = 0;
   let downloadedBytes = 0;
@@ -161,9 +162,11 @@ export async function downloadFiles(files, outputDir, parsed, options = {}) {
  * @param {import('./github-client.js').GitHubFile[]} files - Files to download
  * @param {string} zipPath - Output ZIP file path
  * @param {import('./github-parser.js').ParsedGitHubUrl} parsed - Parsed URL
+ * @param {Object} [options] - Download options
+ * @param {string} [options.token] - GitHub personal access token
  */
-export async function downloadToZip(files, zipPath, parsed) {
-  const client = new GitHubClient(process.env.GITHUB_TOKEN);
+export async function downloadToZip(files, zipPath, parsed, options = {}) {
+  const client = new GitHubClient(options.token);
   const total = files.length;
   let current = 0;
   let downloadedBytes = 0;
