@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1](https://github.com/waldekmastykarz/gitload/compare/v1.1.0...v1.1.1) (2026-02-19)
+
+### Maintenance
+
+- Include CHANGELOG.md in published npm package
+
 ## [1.1.0](https://github.com/waldekmastykarz/gitload/compare/v1.0.3...v1.1.0) (2026-02-19)
 
 ### Features
