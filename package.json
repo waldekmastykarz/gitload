@@ -24,7 +24,8 @@
   },
   "files": [
     "src",
-    "!src/**/*.test.js"
+    "!src/**/*.test.js",
+    "CHANGELOG.md"
   ],
   "author": "",
   "license": "MIT",
