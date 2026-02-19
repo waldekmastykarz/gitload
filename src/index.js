@@ -197,9 +197,9 @@ async function main() {
 
   try {
     if (options.zip) {
-      await downloadToZip(files, options.zip, parsed);
+      await downloadToZip(files, options.zip, parsed, { token });
     } else {
-      await downloadFiles(files, outputDir, parsed, { outputIsFilePath });
+      await downloadFiles(files, outputDir, parsed, { outputIsFilePath, token });
     }
   } catch (error) {
     console.error(chalk.red(`\nDownload failed: ${error.message}`));
