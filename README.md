@@ -2,6 +2,16 @@
 
 A beautiful CLI to download files, folders, or entire repositories from GitHub URLs.
 
+## Use with AI agents
+
+Give your AI coding agent the gitload skill so it can download files from GitHub on your behalf:
+
+```sh
+npx skills add waldekmastykarz/gitload
+```
+
+Once installed, ask your agent to _"download files from GitHub"_, _"fetch a folder from a repo"_, or _"grab code from GitHub"_ and it will handle the rest.
+
 ## Installation
 
 ```bash
