@@ -121,4 +121,25 @@ describe('gitload CLI', () => {
       expect(existsSync(join(outputDir, 'code-simplifier.md'))).toBe(true);
     });
   });
+
+  describe('private repo error handling', () => {
+    it('should suggest --gh flag on 404 for unauthenticated requests', () => {
+      const PRIVATE_REPO_URL = 'https://github.com/waldekmastykarz/lennys-podcast/tree/main/skills/lenny-search';
+
+      try {
+        execSync(`${CLI} "${PRIVATE_REPO_URL}"`, {
+          cwd: TEST_DIR,
+          stdio: 'pipe',
+          env: { ...process.env, GITHUB_TOKEN: '' }
+        });
+        // Should not reach here
+        expect.unreachable('Expected command to fail');
+      } catch (error) {
+        const stderr = error.stderr.toString();
+        expect(stderr).toContain('--gh');
+        expect(stderr).toContain('--token');
+        expect(stderr).toContain('GITHUB_TOKEN');
+      }
+    });
+  });
 });

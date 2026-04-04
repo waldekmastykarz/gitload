@@ -145,7 +145,10 @@ async function main() {
     if (error.message.includes('404')) {
       console.error(chalk.red('  Repository or path not found. Check the URL and try again.'));
       if (!token) {
-        console.error(chalk.yellow('  If this is a private repo, provide a token with --token or GITHUB_TOKEN'));
+        console.error(chalk.yellow('  If this is a private repo, authenticate using one of:'));
+        console.error(chalk.yellow('    --gh                 Use token from gh CLI (requires gh auth login)'));
+        console.error(chalk.yellow('    --token <token>      GitHub personal access token'));
+        console.error(chalk.yellow('    GITHUB_TOKEN=<token> Environment variable'));
       }
     } else if (error.message.includes('403')) {
       console.error(chalk.red('  Rate limit exceeded or access denied.'));
