@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.4](https://github.com/waldekmastykarz/gitload/compare/v1.0.3...v1.0.4) (2026-04-04)
+## [1.1.2](https://github.com/waldekmastykarz/gitload/compare/v1.0.3...v1.1.2) (2026-04-04)
 
 ### Bug Fixes
 
