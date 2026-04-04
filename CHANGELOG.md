@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/waldekmastykarz/gitload/compare/v1.0.3...v1.0.4) (2026-04-04)
+
+### Bug Fixes
+
+- Fix token passthrough to download functions for private repo support
+- Suggest `--gh` flag in 404 error message for private repos
+
 ## [1.0.3](https://github.com/waldekmastykarz/gitload/compare/v1.0.2...v1.0.3) (2026-01-17)
 
 ### Maintenance
