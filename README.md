@@ -131,3 +131,7 @@ Token priority (highest to lowest):
 ## License
 
 MIT
+
+## Download History
+
+[![Download History](https://skill-history.com/chart/waldekmastykarz/gitload.svg)](https://skill-history.com/waldekmastykarz/gitload)
