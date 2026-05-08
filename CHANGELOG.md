@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.3](https://github.com/waldekmastykarz/gitload/compare/v1.1.1...v1.1.3) (2026-05-08)
+
+### Bug Fixes
+
+- Fix downloading folders and files with spaces or special characters in their path
+
 ## [1.1.2](https://github.com/waldekmastykarz/gitload/compare/v1.0.3...v1.1.2) (2026-04-04)
 
 ### Bug Fixes
