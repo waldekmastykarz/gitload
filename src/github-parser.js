@@ -76,8 +76,8 @@ export function parseGitHubUrl(url) {
     throw new Error('URL must include a branch/ref after /tree/ or /blob/');
   }
 
-  const ref = pathParts[3];
-  const path = pathParts.slice(4).join('/') || null;
+  const ref = decodeURIComponent(pathParts[3]);
+  const path = pathParts.slice(4).map(decodeURIComponent).join('/') || null;
 
   return {
     owner,

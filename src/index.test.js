@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { mkdirSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseGitHubUrl } from './github-parser.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
@@ -12,6 +13,22 @@ const CLI = `node ${join(PROJECT_ROOT, 'src/index.js')}`;
 // A small public file for testing
 const TEST_FILE_URL = 'https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md';
 const TEST_FOLDER_URL = 'https://github.com/anthropics/claude-plugins-official/tree/main/plugins/code-simplifier/agents';
+
+describe('parseGitHubUrl', () => {
+  it('should decode URL-encoded spaces in path', () => {
+    const result = parseGitHubUrl(
+      'https://github.com/owner/repo/tree/main/readouts/Add%20optional%20field/20260505'
+    );
+    expect(result.path).toBe('readouts/Add optional field/20260505');
+  });
+
+  it('should decode other URL-encoded characters in path', () => {
+    const result = parseGitHubUrl(
+      'https://github.com/owner/repo/blob/main/docs/%E4%B8%AD%E6%96%87/file.md'
+    );
+    expect(result.path).toBe('docs/中文/file.md');
+  });
+});
 
 describe('gitload CLI', () => {
   beforeEach(() => {
