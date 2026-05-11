@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import { createWriteStream } from 'fs';
 import { dirname, join, basename, relative, extname } from 'path';
 import chalk from 'chalk';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { GitHubClient } from './github-client.js';
 
 /**
@@ -180,7 +180,7 @@ export async function downloadToZip(files, zipPath, parsed, options = {}) {
 
   // Create archive
   const output = createWriteStream(zipPath);
-  const archive = archiver('zip', { zlib: { level: 9 } });
+  const archive = new ZipArchive({ zlib: { level: 9 } });
 
   // Pipe archive to output file
   archive.pipe(output);
