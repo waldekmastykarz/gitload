@@ -1,5 +1,7 @@
 # gitload 🦦
 
+[![skills.sh](https://skills.sh/b/waldekmastykarz/gitload)](https://skills.sh/waldekmastykarz/gitload)
+
 A beautiful CLI to download files, folders, or entire repositories from GitHub URLs.
 
 ## Use with AI agents
