@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.4](https://github.com/waldekmastykarz/gitload/compare/v1.1.3...v1.1.4) (2026-07-15)
+
+### Maintenance
+
+- No user-facing changes in this release
+
 ## [1.1.3](https://github.com/waldekmastykarz/gitload/compare/v1.1.1...v1.1.3) (2026-05-08)
 
 ### Bug Fixes
