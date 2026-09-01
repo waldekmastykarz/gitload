@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.5](https://github.com/waldekmastykarz/gitload/compare/v1.1.4...v1.1.5) (2026-09-01)
+
+### Bug Fixes
+
+- Fix downloading files and folders from branches with slashes in their names
+
 ## [1.1.4](https://github.com/waldekmastykarz/gitload/compare/v1.1.3...v1.1.4) (2026-07-15)
 
 ### Maintenance
