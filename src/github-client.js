@@ -66,22 +66,34 @@ export class GitHubClient {
 
     // For a single file (blob), return just that file
     if (parsed.type === 'blob' && parsed.path) {
-      const file = {
-        path: parsed.path,
-        downloadUrl: getRawUrl(parsed, parsed.path),
-        size: 0, // We'll get this from the download
-        sha: ''
-      };
-      
+      let size = 0;
+      let sha = '';
+
       // Try to get the file info
       try {
         const url = buildContentsApiUrl(parsed);
         const data = await this.fetch(url);
-        file.size = data.size || 0;
-        file.sha = data.sha || '';
-      } catch {
-        // Ignore - we'll still try to download it
+        size = data.size || 0;
+        sha = data.sha || '';
+      } catch (error) {
+        if (error.status === 404) {
+          try {
+            const data = await this.fetchTreeWithRefResolution(parsed);
+            const item = data.tree?.find((entry) => entry.type === 'blob' && entry.path === parsed.path);
+            size = item?.size || 0;
+            sha = item?.sha || '';
+          } catch {
+            // Ignore - we'll still try to download it
+          }
+        }
       }
+
+      const file = {
+        path: parsed.path,
+        downloadUrl: getRawUrl(parsed, parsed.path),
+        size,
+        sha
+      };
       
       onProgress?.(1);
       return [file];
@@ -99,8 +111,7 @@ export class GitHubClient {
    * @returns {Promise<GitHubFile[]>}
    */
   async getTreeContents(parsed, onProgress) {
-    const treeUrl = buildTreeApiUrl(parsed);
-    const data = await this.fetch(treeUrl);
+    const data = await this.fetchTreeWithRefResolution(parsed);
 
     if (!data.tree) {
       throw new Error('Invalid response from GitHub API');
@@ -147,6 +158,46 @@ export class GitHubClient {
     }
 
     return files;
+  }
+
+  /**
+   * Fetch a tree, resolving refs that contain slashes when necessary
+   * @param {import('./github-parser.js').ParsedGitHubUrl} parsed - Parsed GitHub URL
+   * @returns {Promise<any>}
+   */
+  async fetchTreeWithRefResolution(parsed) {
+    try {
+      return await this.fetch(buildTreeApiUrl(parsed));
+    } catch (error) {
+      if (error.status !== 404 || !parsed.ref || !parsed.path) {
+        throw error;
+      }
+
+      const originalRef = parsed.ref;
+      const pathParts = parsed.path.split('/');
+
+      for (let index = 1; index <= pathParts.length; index++) {
+        const ref = [originalRef, ...pathParts.slice(0, index)].join('/');
+        const path = pathParts.slice(index).join('/') || null;
+
+        try {
+          const data = await this.fetch(buildTreeApiUrl({ ...parsed, ref }));
+          const pathExists = !path || data.tree?.some((item) =>
+            item.path === path || item.path.startsWith(`${path}/`)
+          );
+
+          if (!pathExists) continue;
+
+          parsed.ref = ref;
+          parsed.path = path;
+          return data;
+        } catch (candidateError) {
+          if (candidateError.status !== 404) throw candidateError;
+        }
+      }
+
+      throw error;
+    }
   }
 
   /**

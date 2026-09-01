@@ -114,7 +114,7 @@ export function buildContentsApiUrl(parsed) {
  */
 export function buildTreeApiUrl(parsed) {
   const ref = parsed.ref || 'HEAD';
-  return `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/${ref}?recursive=1`;
+  return `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/${encodeURIComponent(ref)}?recursive=1`;
 }
 
 /**

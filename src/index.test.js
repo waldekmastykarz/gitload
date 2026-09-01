@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { execSync } from 'child_process';
 import { mkdirSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { parseGitHubUrl } from './github-parser.js';
+import { GitHubClient } from './github-client.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
@@ -27,6 +28,46 @@ describe('parseGitHubUrl', () => {
       'https://github.com/owner/repo/blob/main/docs/%E4%B8%AD%E6%96%87/file.md'
     );
     expect(result.path).toBe('docs/中文/file.md');
+  });
+});
+
+describe('GitHubClient', () => {
+  it('should resolve branch names containing slashes', async () => {
+    const parsed = parseGitHubUrl(
+      'https://github.com/owner/repo/tree/feature/slash-branch/docs/guides'
+    );
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      if (url.includes('/git/trees/feature?')) {
+        return new Response(null, { status: 404, statusText: 'Not Found' });
+      }
+
+      if (url.includes('/git/trees/feature%2Fslash-branch?')) {
+        return Response.json({
+          tree: [{
+            type: 'blob',
+            path: 'docs/guides/README.md',
+            size: 100,
+            sha: 'abc123'
+          }]
+        });
+      }
+
+      return new Response(null, { status: 404, statusText: 'Not Found' });
+    });
+
+    try {
+      const files = await new GitHubClient('token').getContents(parsed);
+
+      expect(files).toHaveLength(1);
+      expect(files[0].path).toBe('docs/guides/README.md');
+      expect(files[0].downloadUrl).toContain(
+        '/feature/slash-branch/docs/guides/README.md'
+      );
+      expect(parsed.ref).toBe('feature/slash-branch');
+      expect(parsed.path).toBe('docs/guides');
+    } finally {
+      fetchMock.mockRestore();
+    }
   });
 });
 
