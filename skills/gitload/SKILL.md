@@ -25,7 +25,7 @@ Do NOT use gitload when:
 
 Run gitload via npx (no install needed):
 ```bash
-npx gitload-cli https://github.com/user/repo
+npx gitload-cli https://github.com/user/repo --agent
 ```
 
 Or install globally:
@@ -33,57 +33,72 @@ Or install globally:
 npm install -g gitload-cli
 ```
 
+## Agent Output
+
+**Always pass `--agent`** when running gitload. It replaces the banner, spinners, progress bar, and colors with minimal plain text to save tokens:
+
+```
+$ gitload https://github.com/user/repo/tree/main/src --agent
+found 12 files (48.3 KB)
+downloaded 12 of 12 files to src
+```
+
+- `found N files (size)` — files discovered; download in progress
+- `downloaded X of N files to <dir>` / `zipped X of N files to <zip>` — done
+- `failed: <file>: <reason>` — a file that failed to download (up to 5 listed)
+- `error: <message>` (stderr) — fatal error; exit code `1` (runtime) or `2` (invalid usage)
+
 ## Basic Usage
 
 ### Download entire repo
 ```bash
-gitload https://github.com/user/repo
+gitload https://github.com/user/repo --agent
 ```
 Creates a `repo/` folder in the current directory.
 
 ### Download a specific folder
 ```bash
-gitload https://github.com/user/repo/tree/main/src/components
+gitload https://github.com/user/repo/tree/main/src/components --agent
 ```
 Creates a `components/` folder with just that folder's contents.
 
 ### Download a single file
 ```bash
-gitload https://github.com/user/repo/blob/main/README.md
+gitload https://github.com/user/repo/blob/main/README.md --agent
 ```
 
 ### Download to a custom location
 ```bash
-gitload https://github.com/user/repo/tree/main/src -o ./my-source
+gitload https://github.com/user/repo/tree/main/src -o ./my-source --agent
 ```
 
 ### Download contents flat to current directory
 ```bash
-gitload https://github.com/user/repo/tree/main/templates -o .
+gitload https://github.com/user/repo/tree/main/templates -o . --agent
 ```
 
 ### Download as ZIP
 ```bash
-gitload https://github.com/user/repo -z ./repo.zip
+gitload https://github.com/user/repo -z ./repo.zip --agent
 ```
 
 ## Authentication (for private repos or rate limits)
 
 ### Using gh CLI (recommended)
 ```bash
-gitload https://github.com/user/private-repo --gh
+gitload https://github.com/user/private-repo --gh --agent
 ```
 Requires prior `gh auth login`.
 
 ### Using explicit token
 ```bash
-gitload https://github.com/user/repo --token ghp_xxxx
+gitload https://github.com/user/repo --token ghp_xxxx --agent
 ```
 
 ### Using environment variable
 ```bash
 export GITHUB_TOKEN=ghp_xxxx
-gitload https://github.com/user/repo
+gitload https://github.com/user/repo --agent
 ```
 
 **Token priority:** `--token` > `GITHUB_TOKEN` > `--gh`
@@ -99,23 +114,23 @@ gitload accepts standard GitHub URLs:
 
 ### Scaffold from a template folder
 ```bash
-gitload https://github.com/org/templates/tree/main/react-starter -o ./my-app
+gitload https://github.com/org/templates/tree/main/react-starter -o ./my-app --agent
 cd my-app && npm install
 ```
 
 ### Grab example code
 ```bash
-gitload https://github.com/org/examples/tree/main/authentication
+gitload https://github.com/org/examples/tree/main/authentication --agent
 ```
 
 ### Download docs for offline reading
 ```bash
-gitload https://github.com/org/project/tree/main/docs -z ./docs.zip
+gitload https://github.com/org/project/tree/main/docs -z ./docs.zip --agent
 ```
 
 ### Fetch a single config file
 ```bash
-gitload https://github.com/org/configs/blob/main/.eslintrc.json -o .
+gitload https://github.com/org/configs/blob/main/.eslintrc.json -o . --agent
 ```
 
 ## Options Reference
@@ -127,6 +142,7 @@ gitload https://github.com/org/configs/blob/main/.eslintrc.json -o .
 | `-t, --token <token>` | GitHub personal access token |
 | `--gh` | Use token from gh CLI |
 | `--no-color` | Disable colored output |
+| `--agent` | Agent-optimized output: minimal plain text, no progress bar or colors |
 | `-h, --help` | Display help |
 | `-V, --version` | Output version |
 

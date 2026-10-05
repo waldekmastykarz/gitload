@@ -24,6 +24,7 @@ program
   .option('-t, --token <token>', 'GitHub personal access token (for private repos or higher rate limits)')
   .option('--gh', 'Use token from gh CLI (requires gh auth login)')
   .option('--no-color', 'Disable colored output')
+  .option('--agent', 'Agent-optimized output: minimal plain text, no progress bar or colors')
   .addHelpText('after', `
 ${chalk.bold('Examples:')}
   ${chalk.dim('# Download entire repo to current directory')}
@@ -43,6 +44,9 @@ ${chalk.bold('Examples:')}
 
   ${chalk.dim('# Download contents flat to current directory')}
   $ gitload https://github.com/user/repo/tree/main/src -o .
+
+  ${chalk.dim('# Minimal output for AI agents and scripts')}
+  $ gitload https://github.com/user/repo/tree/main/src --agent
 
 ${chalk.bold('Authentication:')}
   ${chalk.dim('# Use token from gh CLI')}
@@ -78,6 +82,11 @@ async function main() {
 
   const url = program.args[0];
   const options = program.opts();
+  const agent = Boolean(options.agent);
+
+  if (agent) {
+    chalk.level = 0;
+  }
   
   // Token priority: --token flag > GITHUB_TOKEN env > --gh flag
   let token = options.token || process.env.GITHUB_TOKEN;
@@ -90,14 +99,17 @@ async function main() {
     }
   }
 
-  console.log();
-  console.log(chalk.bold.cyan('🦦 gitload') + chalk.dim(` v${pkg.version}`));
-  console.log();
+  if (!agent) {
+    console.log();
+    console.log(chalk.bold.cyan('🦦 gitload') + chalk.dim(` v${pkg.version}`));
+    console.log();
+  }
 
   // Parse the GitHub URL
   const parseSpinner = ora({
     text: 'Parsing GitHub URL...',
-    color: 'cyan'
+    color: 'cyan',
+    isSilent: agent
   }).start();
 
   let parsed;
@@ -107,6 +119,10 @@ async function main() {
       (parsed.path ? chalk.dim(`/${parsed.path}`) : '') +
       (parsed.ref ? chalk.dim(` (${parsed.ref})`) : ''));
   } catch (error) {
+    if (agent) {
+      console.error(`error: Invalid GitHub URL: ${error.message}`);
+      process.exit(2);
+    }
     parseSpinner.fail(chalk.red('Invalid GitHub URL'));
     console.error(chalk.red(`  ${error.message}`));
     console.log();
@@ -123,7 +139,8 @@ async function main() {
   // Discover files
   const discoverSpinner = ora({
     text: 'Discovering files...',
-    color: 'cyan'
+    color: 'cyan',
+    isSilent: agent
   }).start();
 
   let files;
@@ -133,14 +150,25 @@ async function main() {
     });
     
     if (files.length === 0) {
-      discoverSpinner.fail(chalk.red('No files found at the specified path'));
+      if (agent) {
+        console.error('error: No files found at the specified path');
+      } else {
+        discoverSpinner.fail(chalk.red('No files found at the specified path'));
+      }
       process.exit(1);
     }
 
     const totalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
     const sizeStr = formatBytes(totalSize);
+    if (agent) {
+      console.log(`found ${files.length} files (${sizeStr})`);
+    }
     discoverSpinner.succeed(chalk.green(`Found ${chalk.bold(files.length)} files`) + chalk.dim(` (${sizeStr})`));
   } catch (error) {
+    if (agent) {
+      console.error(`error: ${getAgentFetchErrorMessage(error, token)}`);
+      process.exit(1);
+    }
     discoverSpinner.fail(chalk.red('Failed to fetch repository contents'));
     if (error.message.includes('404')) {
       console.error(chalk.red('  Repository or path not found. Check the URL and try again.'));
@@ -162,7 +190,9 @@ async function main() {
   }
 
   // Download files
-  console.log();
+  if (!agent) {
+    console.log();
+  }
   
   // Determine output directory/path
   // Default: folder named after the URL path (last segment) or repo name
@@ -200,18 +230,43 @@ async function main() {
 
   try {
     if (options.zip) {
-      await downloadToZip(files, options.zip, parsed, { token });
+      await downloadToZip(files, options.zip, parsed, { token, agent });
     } else {
-      await downloadFiles(files, outputDir, parsed, { outputIsFilePath, token });
+      await downloadFiles(files, outputDir, parsed, { outputIsFilePath, token, agent });
     }
   } catch (error) {
-    console.error(chalk.red(`\nDownload failed: ${error.message}`));
+    if (agent) {
+      console.error(`error: Download failed: ${error.message}`);
+    } else {
+      console.error(chalk.red(`\nDownload failed: ${error.message}`));
+    }
     process.exit(1);
+  }
+
+  if (agent) {
+    return;
   }
 
   console.log();
   console.log(chalk.green.bold('✓ Done!'));
   console.log();
+}
+
+/**
+ * Build a compact, single-line error message for agent output
+ * @param {Error} error - Error thrown while fetching repository contents
+ * @param {string} [token] - GitHub token, if any
+ * @returns {string}
+ */
+function getAgentFetchErrorMessage(error, token) {
+  const authHint = 'authenticate with --gh, --token <token>, or GITHUB_TOKEN';
+  if (error.message.includes('404')) {
+    return 'Repository or path not found' + (token ? '' : `; if private, ${authHint}`);
+  }
+  if (error.message.includes('403')) {
+    return 'Rate limit exceeded or access denied' + (token ? '' : `; ${authHint}`);
+  }
+  return error.message;
 }
 
 function formatBytes(bytes) {

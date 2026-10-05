@@ -79,6 +79,7 @@ function getRelativePath(filePath, parsed) {
  * @param {Object} options - Download options
  * @param {boolean} [options.outputIsFilePath] - If true, outputDir is treated as an exact file path for single file downloads
  * @param {string} [options.token] - GitHub personal access token
+ * @param {boolean} [options.agent] - If true, print minimal plain-text output for agents
  */
 export async function downloadFiles(files, outputDir, parsed, options = {}) {
   const client = new GitHubClient(options.token);
@@ -90,13 +91,17 @@ export async function downloadFiles(files, outputDir, parsed, options = {}) {
   // Check if this is a single file download with an explicit file path
   const isSingleFileWithPath = parsed.type === 'blob' && files.length === 1 && options.outputIsFilePath;
 
-  console.log(chalk.bold('Downloading files...'));
-  console.log();
+  if (!options.agent) {
+    console.log(chalk.bold('Downloading files...'));
+    console.log();
+  }
 
   // Create a simple streaming output
   const updateProgress = (fileName, bytes) => {
     current++;
     downloadedBytes += bytes;
+
+    if (options.agent) return;
     
     const spinner = PROGRESS_CHARS.spinner[spinnerIndex % PROGRESS_CHARS.spinner.length];
     spinnerIndex++;
@@ -135,6 +140,14 @@ export async function downloadFiles(files, outputDir, parsed, options = {}) {
     }
   }
 
+  const successCount = total - errors.length;
+
+  if (options.agent) {
+    printAgentErrors(errors);
+    console.log(`downloaded ${successCount} of ${total} files to ${outputDir}`);
+    return;
+  }
+
   // Final newlines to clear progress display
   process.stdout.write('\n\n');
 
@@ -150,7 +163,6 @@ export async function downloadFiles(files, outputDir, parsed, options = {}) {
     console.log();
   }
 
-  const successCount = total - errors.length;
   console.log(
     chalk.green(`✓ Downloaded ${chalk.bold(successCount)} files`) +
     chalk.dim(` to ${outputDir}`)
@@ -164,6 +176,7 @@ export async function downloadFiles(files, outputDir, parsed, options = {}) {
  * @param {import('./github-parser.js').ParsedGitHubUrl} parsed - Parsed URL
  * @param {Object} [options] - Download options
  * @param {string} [options.token] - GitHub personal access token
+ * @param {boolean} [options.agent] - If true, print minimal plain-text output for agents
  */
 export async function downloadToZip(files, zipPath, parsed, options = {}) {
   const client = new GitHubClient(options.token);
@@ -175,8 +188,10 @@ export async function downloadToZip(files, zipPath, parsed, options = {}) {
   // Ensure output directory exists
   await mkdir(dirname(zipPath) || '.', { recursive: true });
 
-  console.log(chalk.bold('Downloading and creating ZIP...'));
-  console.log();
+  if (!options.agent) {
+    console.log(chalk.bold('Downloading and creating ZIP...'));
+    console.log();
+  }
 
   // Create archive
   const output = createWriteStream(zipPath);
@@ -188,6 +203,8 @@ export async function downloadToZip(files, zipPath, parsed, options = {}) {
   const updateProgress = (fileName, bytes) => {
     current++;
     downloadedBytes += bytes;
+
+    if (options.agent) return;
     
     const spinner = PROGRESS_CHARS.spinner[spinnerIndex % PROGRESS_CHARS.spinner.length];
     spinnerIndex++;
@@ -226,6 +243,14 @@ export async function downloadToZip(files, zipPath, parsed, options = {}) {
     output.on('error', reject);
   });
 
+  const successCount = total - errors.length;
+
+  if (options.agent) {
+    printAgentErrors(errors);
+    console.log(`zipped ${successCount} of ${total} files to ${zipPath}`);
+    return;
+  }
+
   process.stdout.write('\n\n');
 
   if (errors.length > 0) {
@@ -239,11 +264,23 @@ export async function downloadToZip(files, zipPath, parsed, options = {}) {
     console.log();
   }
 
-  const successCount = total - errors.length;
   console.log(
     chalk.green(`✓ Created ZIP with ${chalk.bold(successCount)} files`) +
     chalk.dim(` → ${zipPath}`)
   );
+}
+
+/**
+ * Print download errors as compact plain-text lines for agents
+ * @param {{file: string, error: string}[]} errors - Download errors
+ */
+function printAgentErrors(errors) {
+  for (const { file, error } of errors.slice(0, 5)) {
+    console.log(`failed: ${file}: ${error}`);
+  }
+  if (errors.length > 5) {
+    console.log(`failed: ... and ${errors.length - 5} more`);
+  }
 }
 
 /**
