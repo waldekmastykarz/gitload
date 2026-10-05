@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0](https://github.com/waldekmastykarz/gitload/compare/v1.1.5...v1.2.0) (2026-10-05)
+
+### Features
+
+- Add an `--agent` flag for token-efficient CLI output
+
 ## [1.1.5](https://github.com/waldekmastykarz/gitload/compare/v1.1.4...v1.1.5) (2026-09-01)
 
 ### Bug Fixes
