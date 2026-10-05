@@ -5,6 +5,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { parseGitHubUrl } from './github-parser.js';
 import { GitHubClient } from './github-client.js';
+import { downloadFiles, downloadToZip } from './downloader.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
@@ -67,6 +68,75 @@ describe('GitHubClient', () => {
       expect(parsed.path).toBe('docs/guides');
     } finally {
       fetchMock.mockRestore();
+    }
+  });
+});
+
+describe('agent output', () => {
+  const files = [
+    { path: 'docs/a.md', downloadUrl: 'https://example.test/a.md', size: 5 },
+    { path: 'docs/b.md', downloadUrl: 'https://example.test/b.md', size: 5 }
+  ];
+  const parsed = { owner: 'owner', repo: 'repo', ref: 'main', path: 'docs', type: 'tree' };
+  let fetchMock;
+  let logSpy;
+  let writeSpy;
+
+  beforeEach(() => {
+    mkdirSync(TEST_DIR, { recursive: true });
+    fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      if (url.endsWith('b.md')) {
+        return new Response(null, { status: 404, statusText: 'Not Found' });
+      }
+      return new Response('hello');
+    });
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    fetchMock.mockRestore();
+    logSpy.mockRestore();
+    writeSpy.mockRestore();
+    if (existsSync(TEST_DIR)) {
+      rmSync(TEST_DIR, { recursive: true });
+    }
+  });
+
+  it('should print only compact summary lines when downloading files', async () => {
+    const outputDir = join(TEST_DIR, 'docs');
+
+    await downloadFiles(files, outputDir, parsed, { agent: true });
+
+    expect(writeSpy).not.toHaveBeenCalled();
+    expect(logSpy.mock.calls.map((args) => args.join(' '))).toEqual([
+      'failed: b.md: Failed to download: 404 Not Found',
+      `downloaded 1 of 2 files to ${outputDir}`
+    ]);
+    expect(readFileSync(join(outputDir, 'a.md'), 'utf-8')).toBe('hello');
+  });
+
+  it('should print only compact summary lines when creating a ZIP', async () => {
+    const zipPath = join(TEST_DIR, 'docs.zip');
+
+    await downloadToZip(files, zipPath, parsed, { agent: true });
+
+    expect(writeSpy).not.toHaveBeenCalled();
+    expect(logSpy.mock.calls.map((args) => args.join(' '))).toEqual([
+      'failed: b.md: Failed to download: 404 Not Found',
+      `zipped 1 of 2 files to ${zipPath}`
+    ]);
+    expect(existsSync(zipPath)).toBe(true);
+  });
+
+  it('should print a single-line error without banner for invalid URLs', () => {
+    try {
+      execSync(`${CLI} "https://example.com/user/repo" --agent`, { stdio: 'pipe' });
+      expect.unreachable('Expected command to fail');
+    } catch (error) {
+      expect(error.status).toBe(2);
+      expect(error.stdout.toString()).toBe('');
+      expect(error.stderr.toString()).toBe('error: Invalid GitHub URL: URL must be a GitHub URL (github.com)\n');
     }
   });
 });
@@ -177,6 +247,18 @@ describe('gitload CLI', () => {
 
       expect(existsSync(outputDir)).toBe(true);
       expect(existsSync(join(outputDir, 'code-simplifier.md'))).toBe(true);
+    });
+
+    it('should print minimal plain-text output with --agent', () => {
+      const outputDir = join(TEST_DIR, 'agents');
+
+      const stdout = execSync(`${CLI} "${TEST_FOLDER_URL}" --agent`, {
+        cwd: TEST_DIR,
+        stdio: 'pipe'
+      }).toString();
+
+      expect(existsSync(join(outputDir, 'code-simplifier.md'))).toBe(true);
+      expect(stdout).toMatch(/^found \d+ files \([^)]+\)\ndownloaded (\d+) of \1 files to agents\n$/);
     });
   });
 

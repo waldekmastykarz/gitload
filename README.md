@@ -14,6 +14,14 @@ npx skills add waldekmastykarz/gitload
 
 Once installed, ask your agent to _"download files from GitHub"_, _"fetch a folder from a repo"_, or _"grab code from GitHub"_ and it will handle the rest.
 
+When running gitload from an agent or script, pass `--agent` for token-efficient output: no banner, spinners, progress bar, or colors — just one line when files are found and one summary line when done. Errors are printed as a single `error: ...` line on stderr.
+
+```
+$ gitload https://github.com/user/repo/tree/main/src --agent
+found 12 files (48.3 KB)
+downloaded 12 of 12 files to src
+```
+
 ## Installation
 
 ```bash
@@ -40,6 +48,7 @@ Options:
   -t, --token <token>    GitHub personal access token (for private repos)
   --gh                   Use token from gh CLI (requires gh auth login)
   --no-color             Disable colored output
+  --agent                Agent-optimized output: minimal plain text, no progress bar or colors
   -V, --version          Output version number
   -h, --help             Display help
 ```
@@ -113,6 +122,7 @@ Token priority (highest to lowest):
 - 📁 Download entire repositories, folders, or single files
 - 🗜️ Create ZIP archives with the `--zip` option
 - 🎨 Beautiful progress display with colors and progress bars
+- 🤖 Token-efficient output for AI agents with the `--agent` option
 - 🔐 Support for private repositories via GitHub tokens
 - ⚡ Efficient file discovery using GitHub's Git Trees API
 
