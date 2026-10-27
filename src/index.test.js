@@ -10,7 +10,7 @@ import { downloadFiles, downloadToZip } from './downloader.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
 const TEST_DIR = join(PROJECT_ROOT, '.test-output');
-const CLI = `node ${join(PROJECT_ROOT, 'src/index.js')}`;
+const CLI = `node --import ${join(PROJECT_ROOT, 'tests/mock-fetch.js')} ${join(PROJECT_ROOT, 'src/index.js')}`;
 
 // A small public file for testing
 const TEST_FILE_URL = 'https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md';
